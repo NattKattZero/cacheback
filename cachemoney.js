@@ -3850,14 +3850,15 @@ function createItem(item, cacheName) {
 
 function getItem(lookup) {
     var cacheName = lookup.cacheName;
+    var cacheId = void 0;
     if (lookup.cacheId) {
-        var _cacheId = lookup.cacheId;
+        cacheId = lookup.cacheId;
     } else {
-        var _cacheId2 = cacheIdLookups[cacheName][lookup.id];
+        cacheId = cacheIdLookups[cacheName][lookup.id];
     }
     var cache = getCache(cacheName);
-    if (cacheId in caches) {
-        return caches[cacheId];
+    if (cacheId in cache.data) {
+        return cache.data[cacheId];
     }
     return null;
 }
@@ -9209,24 +9210,28 @@ var _cache = __webpack_require__(125);
 
 (0, _cache.invalidateAll)().then(function () {
     showAll();
-    // showSample();
+    showSample();
 });
 
 function showAll() {
     var posts = (0, _cache.getAll)('post');
     var postHtml = posts.reduce(function (prevVal, post) {
-        return prevVal + ('<li rel=' + post.cacheId + '>' + post.title + '</li>');
+        return prevVal + ('<li rel=' + post.cacheId + '>id: ' + post.id + ', cacheId: ' + post.cacheId + ', ' + post.title + '</li>');
     }, '');
-    document.getElementById('samplePost').innerHTML = postHtml;
+    document.getElementById('allPosts').innerHTML = postHtml;
     (0, _cache.createItem)({ name: 'Nathan Johnson' }, 'user');
     var users = (0, _cache.getAll)('user');
     var userHtml = users.reduce(function (prevVal, user) {
-        return prevVal + ('<li rel=' + user.cacheId + '>' + user.name + '</li>');
+        return prevVal + ('<li rel=' + user.cacheId + '>id: ' + user.id + ', cacheId: ' + user.cacheId + ', ' + user.name + '</li>');
     }, '');
-    document.getElementById('sampleUser').innerHTML = userHtml;
+    document.getElementById('allUsers').innerHTML = userHtml;
 }
 
-function showSample() {}
+function showSample() {
+    // const samplePost = getItem({ cacheId:'cache-1', cacheName: 'post' });
+    var samplePost = (0, _cache.getItem)({ id: 2, cacheName: 'post' });
+    document.getElementById('samplePost').innerHTML = samplePost.title;
+}
 
 /***/ }),
 /* 330 */

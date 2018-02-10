@@ -34,15 +34,16 @@ export function createItem(item, cacheName) {
 
 export function getItem(lookup) {
     const cacheName = lookup.cacheName;
+    let cacheId;
     if (lookup.cacheId) {
-        const cacheId = lookup.cacheId;
+        cacheId = lookup.cacheId;
     }
     else {
-        const cacheId = cacheIdLookups[cacheName][lookup.id];
+        cacheId = cacheIdLookups[cacheName][lookup.id];
     }
     const cache = getCache(cacheName);
-    if (cacheId in caches) {
-        return caches[cacheId];
+    if (cacheId in cache.data) {
+        return cache.data[cacheId];
     }
     return null;
 }
