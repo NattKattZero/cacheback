@@ -3727,9 +3727,10 @@ var invalidateCache = exports.invalidateCache = function () {
                         cache = getCache(cacheName);
 
                         cache.data = {};
+                        cache.uncommittedData = {};
                         return _context.abrupt("return", cache.retriever());
 
-                    case 3:
+                    case 4:
                     case "end":
                         return _context.stop();
                 }
@@ -3830,7 +3831,7 @@ var caches = {};
 
 function createCache(cacheName, pk, retriever) {
     if (!(cacheName in caches)) {
-        var cache = { pk: pk, retriever: retriever, data: {} };
+        var cache = { pk: pk, retriever: retriever, nextId: 1, data: {}, uncommittedData: {} };
         caches[cacheName] = cache;
         return cache;
     }
@@ -3839,17 +3840,28 @@ function createCache(cacheName, pk, retriever) {
 function createItem(item, cacheName) {
     var cache = getCache(cacheName);
     var key = item[cache.pk];
-    cache.data[key] = item;
+    if (key) {
+        cache.data[key] = item;
+    } else {
+        cache.uncommittedData[cache.nextId] = item;
+        cache.nextId += 1;
+    }
 }
 
 function getItemForKey(key, cacheName) {
     var cache = getCache(cacheName);
-    return cache.data[key];
+    if (key in cache.data) {
+        return cache.data[key];
+    }
+    if (key in cache.uncommittedData) {
+        return cache.uncommittedData[key];
+    }
+    return null;
 }
 
 function getAll(cacheName) {
     var cache = getCache(cacheName);
-    return cache.data;
+    return Object.values(cache.data).concat(Object.values(cache.uncommittedData));
 }
 
 function debugPrintCaches() {
@@ -9194,12 +9206,13 @@ var _cache = __webpack_require__(125);
 
 (0, _cache.invalidateAll)().then(function () {
     var posts = (0, _cache.getAll)('post');
-    var postHtml = Object.values(posts).reduce(function (prevVal, post) {
+    var postHtml = posts.reduce(function (prevVal, post) {
         return prevVal + ('<li>' + post.title + '</li>');
     }, '');
-    document.getElementById('samplePost').innerHTML = postHtml;
+    // document.getElementById('samplePost').innerHTML = postHtml;
+    (0, _cache.createItem)({ name: 'Nathan Johnson' }, 'user');
     var users = (0, _cache.getAll)('user');
-    var userHtml = Object.values(users).reduce(function (prevVal, user) {
+    var userHtml = users.reduce(function (prevVal, user) {
         return prevVal + ('<li>' + user.name + '</li>');
     }, '');
     document.getElementById('sampleUser').innerHTML = userHtml;
