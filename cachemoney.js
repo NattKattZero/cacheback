@@ -3727,10 +3727,9 @@ var invalidateCache = exports.invalidateCache = function () {
                         cache = getCache(cacheName);
 
                         cache.data = {};
-                        cache.uncommittedData = {};
                         return _context.abrupt("return", cache.retriever());
 
-                    case 4:
+                    case 3:
                     case "end":
                         return _context.stop();
                 }
@@ -3821,18 +3820,20 @@ var invalidateAll = exports.invalidateAll = function () {
 
 exports.createCache = createCache;
 exports.createItem = createItem;
-exports.getItemForKey = getItemForKey;
+exports.getItem = getItem;
 exports.getAll = getAll;
 exports.debugPrintCaches = debugPrintCaches;
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 var caches = {};
+var cacheIdLookups = {};
 
 function createCache(cacheName, pk, retriever) {
     if (!(cacheName in caches)) {
-        var cache = { pk: pk, retriever: retriever, nextId: 1, data: {}, uncommittedData: {} };
+        var cache = { pk: pk, retriever: retriever, nextId: 1, data: {} };
         caches[cacheName] = cache;
+        cacheIdLookups[cacheName] = {};
         return cache;
     }
 }
@@ -3840,28 +3841,30 @@ function createCache(cacheName, pk, retriever) {
 function createItem(item, cacheName) {
     var cache = getCache(cacheName);
     var key = item[cache.pk];
-    if (key) {
-        cache.data[key] = item;
-    } else {
-        cache.uncommittedData[cache.nextId] = item;
-        cache.nextId += 1;
-    }
+    var cacheId = "cache-" + cache.nextId;
+    cache.nextId += 1;
+    item.cacheId = cacheId;
+    cache.data[cacheId] = item;
+    cacheIdLookups[cacheName][key] = cacheId;
 }
 
-function getItemForKey(key, cacheName) {
-    var cache = getCache(cacheName);
-    if (key in cache.data) {
-        return cache.data[key];
+function getItem(lookup) {
+    var cacheName = lookup.cacheName;
+    if (lookup.cacheId) {
+        var _cacheId = lookup.cacheId;
+    } else {
+        var _cacheId2 = cacheIdLookups[cacheName][lookup.id];
     }
-    if (key in cache.uncommittedData) {
-        return cache.uncommittedData[key];
+    var cache = getCache(cacheName);
+    if (cacheId in caches) {
+        return caches[cacheId];
     }
     return null;
 }
 
 function getAll(cacheName) {
     var cache = getCache(cacheName);
-    return Object.values(cache.data).concat(Object.values(cache.uncommittedData));
+    return Object.values(cache.data);
 }
 
 function debugPrintCaches() {
@@ -9205,18 +9208,25 @@ var _cache = __webpack_require__(125);
 (0, _cache.createCache)('user', 'id', _postdao.retrieveUsers);
 
 (0, _cache.invalidateAll)().then(function () {
+    showAll();
+    // showSample();
+});
+
+function showAll() {
     var posts = (0, _cache.getAll)('post');
     var postHtml = posts.reduce(function (prevVal, post) {
-        return prevVal + ('<li>' + post.title + '</li>');
+        return prevVal + ('<li rel=' + post.cacheId + '>' + post.title + '</li>');
     }, '');
-    // document.getElementById('samplePost').innerHTML = postHtml;
+    document.getElementById('samplePost').innerHTML = postHtml;
     (0, _cache.createItem)({ name: 'Nathan Johnson' }, 'user');
     var users = (0, _cache.getAll)('user');
     var userHtml = users.reduce(function (prevVal, user) {
-        return prevVal + ('<li>' + user.name + '</li>');
+        return prevVal + ('<li rel=' + user.cacheId + '>' + user.name + '</li>');
     }, '');
     document.getElementById('sampleUser').innerHTML = userHtml;
-});
+}
+
+function showSample() {}
 
 /***/ }),
 /* 330 */

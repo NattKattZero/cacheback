@@ -1,9 +1,11 @@
 const caches = {};
+const cacheIdLookups = {};
 
 export function createCache(cacheName, pk, retriever) {
     if (!(cacheName in caches)) {
-        const cache = { pk, retriever, nextId: 1, data: {}, uncommittedData: {} };
+        const cache = { pk, retriever, nextId: 1, data: {} };
         caches[cacheName] = cache;
+        cacheIdLookups[cacheName] = {};
         return cache;
     }
 }
@@ -11,7 +13,6 @@ export function createCache(cacheName, pk, retriever) {
 export async function invalidateCache(cacheName) {
     const cache = getCache(cacheName);
     cache.data = {};
-    cache.uncommittedData = {};
     return cache.retriever();
 }
 
@@ -24,29 +25,31 @@ export async function invalidateAll() {
 export function createItem(item, cacheName) {
     const cache = getCache(cacheName);
     const key = item[cache.pk];
-    if (key) {
-        cache.data[key] = item;
-    }
-    else {
-        cache.uncommittedData[cache.nextId] = item;
-        cache.nextId += 1;
-    }
+    const cacheId = `cache-${cache.nextId}`;
+    cache.nextId += 1;
+    item.cacheId = cacheId;
+    cache.data[cacheId] = item;
+    cacheIdLookups[cacheName][key] = cacheId;
 }
 
-export function getItemForKey(key, cacheName) {
-    const cache = getCache(cacheName);
-    if (key in cache.data) {
-        return cache.data[key];
+export function getItem(lookup) {
+    const cacheName = lookup.cacheName;
+    if (lookup.cacheId) {
+        const cacheId = lookup.cacheId;
     }
-    if (key in cache.uncommittedData) {
-        return cache.uncommittedData[key];
+    else {
+        const cacheId = cacheIdLookups[cacheName][lookup.id];
+    }
+    const cache = getCache(cacheName);
+    if (cacheId in caches) {
+        return caches[cacheId];
     }
     return null;
 }
 
 export function getAll(cacheName) {
     const cache = getCache(cacheName);
-    return Object.values(cache.data).concat(Object.values(cache.uncommittedData));
+    return Object.values(cache.data);
 }
 
 export function debugPrintCaches() {
