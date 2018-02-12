@@ -9203,24 +9203,31 @@ module.exports = function (regExp, replace) {
 
 var _postdao = __webpack_require__(330);
 
+var postdao = _interopRequireWildcard(_postdao);
+
 var _cache = __webpack_require__(125);
 
-(0, _cache.createCache)('post', 'id', _postdao.retrievePosts);
-(0, _cache.createCache)('user', 'id', _postdao.retrieveUsers);
+var cacheback = _interopRequireWildcard(_cache);
 
-(0, _cache.invalidateAll)().then(function () {
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+// import { retrievePosts, retrieveUsers } from './postdao';
+cacheback.createCache('post', 'id', postdao.retrievePosts);
+cacheback.createCache('user', 'id', postdao.retrieveUsers);
+
+cacheback.invalidateAll().then(function () {
     showAll();
     showSample();
 });
 
 function showAll() {
-    var posts = (0, _cache.getAll)('post');
+    var posts = cacheback.getAll('post');
     var postHtml = posts.reduce(function (prevVal, post) {
         return prevVal + ('<li rel=' + post.cacheId + '>id: ' + post.id + ', cacheId: ' + post.cacheId + ', ' + post.title + '</li>');
     }, '');
     document.getElementById('allPosts').innerHTML = postHtml;
-    (0, _cache.createItem)({ name: 'Nathan Johnson' }, 'user');
-    var users = (0, _cache.getAll)('user');
+    cacheback.createItem({ name: 'Nathan Johnson' }, 'user');
+    var users = cacheback.getAll('user');
     var userHtml = users.reduce(function (prevVal, user) {
         return prevVal + ('<li rel=' + user.cacheId + '>id: ' + user.id + ', cacheId: ' + user.cacheId + ', ' + user.name + '</li>');
     }, '');
@@ -9229,7 +9236,7 @@ function showAll() {
 
 function showSample() {
     // const samplePost = getItem({ cacheId:'cache-1', cacheName: 'post' });
-    var samplePost = (0, _cache.getItem)({ id: 2, cacheName: 'post' });
+    var samplePost = cacheback.getItem({ id: 2, cacheName: 'post' });
     document.getElementById('samplePost').innerHTML = samplePost.title;
 }
 
