@@ -1,11 +1,14 @@
 const caches = {};
-const cacheIdLookups = {};
+const cacheIDToIDMaps = {};
+const idToCacheIDMaps = {};
+const relationships = {};
 
 export function createCache(cacheName, pk, retriever) {
     if (!(cacheName in caches)) {
-        const cache = { pk, retriever, nextId: 1, data: {} };
+        const cache = { pk, retriever, nextID: 1, data: {} };
         caches[cacheName] = cache;
-        cacheIdLookups[cacheName] = {};
+        cacheIDToIDMaps[cacheName] = {};
+        idToCacheIDMaps[cacheName] = {};
         return cache;
     }
 }
@@ -22,28 +25,58 @@ export async function invalidateAll() {
     }
 }
 
-export function createItem(item, cacheName) {
+export function cacheItem(item, cacheName) {
     const cache = getCache(cacheName);
     const key = item[cache.pk];
-    const cacheId = `cache-${cache.nextId}`;
-    cache.nextId += 1;
-    item.cacheId = cacheId;
-    cache.data[cacheId] = item;
-    cacheIdLookups[cacheName][key] = cacheId;
+    const cacheID = findCacheID({
+        cacheName,
+        id: key
+    });
+    item.cacheID = cacheID;
+    cache.data[cacheID] = item;
+    cacheIDToIDMaps[cacheName][cacheID] = key;
+    idToCacheIDMaps[cacheName][key] = cacheID;
+}
+
+export function relateIDs(lookup1, lookup2) {
+    const relationshipName = `${lookup1.cacheName}:${lookup2.cacheName}`;
+    if (!(relationshipName in relationships)) {
+        relationships[relationshipName] = {};
+    }
+    const cacheID1 = findCacheID(lookup1);
+    const cacheID2 = findCacheID(lookup2);
+    if (cacheID1 in relationships[relationshipName]) {
+        relationships[relationshipName][cacheID1].push(cacheID2);
+        console.log(`relating: ${cacheID1} to ${cacheID2}`);
+    }
+    else {
+        relationships[relationshipName][cacheID1] = [cacheID2];
+    }
+}
+
+export function getRelatedItems(lookup, relatedCacheName) {
+    const cacheID = findCacheID(lookup);
+    const relationshipName = `${lookup.cacheName}:${relatedCacheName}`;
+    if (cacheID in relationships[relationshipName]) {
+        const relatedIDs = relationships[relationshipName][cacheID];
+        const relatedItems = relatedIDs.map(relatedID => getItem({ cacheID: relatedID, cacheName: relatedCacheName }));
+        return relatedItems;
+    }
+    return [];
 }
 
 export function getItem(lookup) {
     const cacheName = lookup.cacheName;
-    let cacheId;
-    if (lookup.cacheId) {
-        cacheId = lookup.cacheId;
+    let cacheID;
+    if (lookup.cacheID) {
+        cacheID = lookup.cacheID;
     }
     else {
-        cacheId = cacheIdLookups[cacheName][lookup.id];
+        cacheID = idToCacheIDMaps[cacheName][lookup.id];
     }
     const cache = getCache(cacheName);
-    if (cacheId in cache.data) {
-        return cache.data[cacheId];
+    if (cacheID in cache.data) {
+        return cache.data[cacheID];
     }
     return null;
 }
@@ -57,10 +90,37 @@ export function debugPrintCaches() {
     console.log(caches);
 }
 
+export function debugPrintRelationships() {
+    console.log(relationships);
+}
+
 function getCache(cacheName) {
     if (cacheName in caches) {
         const cache = caches[cacheName];
         return cache;
     }
     return null;
+}
+
+function getNextCacheID(cacheName) {
+    const cache = getCache(cacheName);
+    if (cache) {
+        const nextCacheID = `cache-${cache.nextID}`;
+        cache.nextID += 1;
+        return nextCacheID;
+    }
+    return null;
+}
+
+function findCacheID(lookup) {
+    if (lookup.cacheID) {
+        return lookup.cacheID;
+    }
+    if (lookup.id in idToCacheIDMaps[lookup.cacheName]) {
+        return idToCacheIDMaps[lookup.cacheName][lookup.id];
+    }
+    const cacheID = getNextCacheID(lookup.cacheName);
+    idToCacheIDMaps[lookup.cacheName][lookup.id] = cacheID;
+    cacheIDToIDMaps[lookup.cacheName][cacheID] = lookup.id;
+    return cacheID;
 }

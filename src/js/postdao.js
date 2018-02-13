@@ -1,4 +1,4 @@
-import { createItem, debugPrintCaches } from './cache';
+import * as cache from './cache';
 
 async function getPosts() {
     const response = await fetch('https://jsonplaceholder.typicode.com/posts');
@@ -15,7 +15,15 @@ async function getUsers() {
 export async function retrievePosts() {
     return getPosts().then(posts => {
         for (let post of posts) {
-            createItem(post, 'post');
+            cache.cacheItem(post, 'post');
+            cache.relateIDs({
+                cacheName: 'post',
+                id: post.id
+            },
+            {
+                cacheName: 'user',
+                id: post.userId
+            });
         }
     });
 }
@@ -23,7 +31,7 @@ export async function retrievePosts() {
 export async function retrieveUsers() {
     return getUsers().then(users => {
         for (let user of users) {
-            createItem(user, 'user');
+            cache.cacheItem(user, 'user');
         }
     });
 }

@@ -3819,46 +3819,83 @@ var invalidateAll = exports.invalidateAll = function () {
 }();
 
 exports.createCache = createCache;
-exports.createItem = createItem;
+exports.cacheItem = cacheItem;
+exports.relateIDs = relateIDs;
+exports.getRelatedItems = getRelatedItems;
 exports.getItem = getItem;
 exports.getAll = getAll;
 exports.debugPrintCaches = debugPrintCaches;
+exports.debugPrintRelationships = debugPrintRelationships;
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 var caches = {};
-var cacheIdLookups = {};
+var cacheIDToIDMaps = {};
+var idToCacheIDMaps = {};
+var relationships = {};
 
 function createCache(cacheName, pk, retriever) {
     if (!(cacheName in caches)) {
-        var cache = { pk: pk, retriever: retriever, nextId: 1, data: {} };
+        var cache = { pk: pk, retriever: retriever, nextID: 1, data: {} };
         caches[cacheName] = cache;
-        cacheIdLookups[cacheName] = {};
+        cacheIDToIDMaps[cacheName] = {};
+        idToCacheIDMaps[cacheName] = {};
         return cache;
     }
 }
 
-function createItem(item, cacheName) {
+function cacheItem(item, cacheName) {
     var cache = getCache(cacheName);
     var key = item[cache.pk];
-    var cacheId = "cache-" + cache.nextId;
-    cache.nextId += 1;
-    item.cacheId = cacheId;
-    cache.data[cacheId] = item;
-    cacheIdLookups[cacheName][key] = cacheId;
+    var cacheID = findCacheID({
+        cacheName: cacheName,
+        id: key
+    });
+    item.cacheID = cacheID;
+    cache.data[cacheID] = item;
+    cacheIDToIDMaps[cacheName][cacheID] = key;
+    idToCacheIDMaps[cacheName][key] = cacheID;
+}
+
+function relateIDs(lookup1, lookup2) {
+    var relationshipName = lookup1.cacheName + ":" + lookup2.cacheName;
+    if (!(relationshipName in relationships)) {
+        relationships[relationshipName] = {};
+    }
+    var cacheID1 = findCacheID(lookup1);
+    var cacheID2 = findCacheID(lookup2);
+    if (cacheID1 in relationships[relationshipName]) {
+        relationships[relationshipName][cacheID1].push(cacheID2);
+        console.log("relating: " + cacheID1 + " to " + cacheID2);
+    } else {
+        relationships[relationshipName][cacheID1] = [cacheID2];
+    }
+}
+
+function getRelatedItems(lookup, relatedCacheName) {
+    var cacheID = findCacheID(lookup);
+    var relationshipName = lookup.cacheName + ":" + relatedCacheName;
+    if (cacheID in relationships[relationshipName]) {
+        var relatedIDs = relationships[relationshipName][cacheID];
+        var relatedItems = relatedIDs.map(function (relatedID) {
+            return getItem({ cacheID: relatedID, cacheName: relatedCacheName });
+        });
+        return relatedItems;
+    }
+    return [];
 }
 
 function getItem(lookup) {
     var cacheName = lookup.cacheName;
-    var cacheId = void 0;
-    if (lookup.cacheId) {
-        cacheId = lookup.cacheId;
+    var cacheID = void 0;
+    if (lookup.cacheID) {
+        cacheID = lookup.cacheID;
     } else {
-        cacheId = cacheIdLookups[cacheName][lookup.id];
+        cacheID = idToCacheIDMaps[cacheName][lookup.id];
     }
     var cache = getCache(cacheName);
-    if (cacheId in cache.data) {
-        return cache.data[cacheId];
+    if (cacheID in cache.data) {
+        return cache.data[cacheID];
     }
     return null;
 }
@@ -3872,12 +3909,39 @@ function debugPrintCaches() {
     console.log(caches);
 }
 
+function debugPrintRelationships() {
+    console.log(relationships);
+}
+
 function getCache(cacheName) {
     if (cacheName in caches) {
         var cache = caches[cacheName];
         return cache;
     }
     return null;
+}
+
+function getNextCacheID(cacheName) {
+    var cache = getCache(cacheName);
+    if (cache) {
+        var nextCacheID = "cache-" + cache.nextID;
+        cache.nextID += 1;
+        return nextCacheID;
+    }
+    return null;
+}
+
+function findCacheID(lookup) {
+    if (lookup.cacheID) {
+        return lookup.cacheID;
+    }
+    if (lookup.id in idToCacheIDMaps[lookup.cacheName]) {
+        return idToCacheIDMaps[lookup.cacheName][lookup.id];
+    }
+    var cacheID = getNextCacheID(lookup.cacheName);
+    idToCacheIDMaps[lookup.cacheName][lookup.id] = cacheID;
+    cacheIDToIDMaps[lookup.cacheName][cacheID] = lookup.id;
+    return cacheID;
 }
 
 /***/ }),
@@ -9222,13 +9286,13 @@ cacheback.invalidateAll().then(function () {
 function showAll() {
     var posts = cacheback.getAll('post');
     var postHtml = posts.reduce(function (prevVal, post) {
-        return prevVal + ('<li rel=' + post.cacheId + '>id: ' + post.id + ', cacheId: ' + post.cacheId + ', ' + post.title + '</li>');
+        return prevVal + ('<li rel=' + post.cacheID + '>id: ' + post.id + ', cacheID: ' + post.cacheID + ', ' + post.title + ', userID: ' + post.userId + '</li>');
     }, '');
     document.getElementById('allPosts').innerHTML = postHtml;
-    cacheback.createItem({ name: 'Nathan Johnson' }, 'user');
+    // cacheback.createItem({ name: 'Nathan Johnson' }, 'user');
     var users = cacheback.getAll('user');
     var userHtml = users.reduce(function (prevVal, user) {
-        return prevVal + ('<li rel=' + user.cacheId + '>id: ' + user.id + ', cacheId: ' + user.cacheId + ', ' + user.name + '</li>');
+        return prevVal + ('<li rel=' + user.cacheID + '>id: ' + user.id + ', cacheID: ' + user.cacheID + ', ' + user.name + '</li>');
     }, '');
     document.getElementById('allUsers').innerHTML = userHtml;
 }
@@ -9236,7 +9300,34 @@ function showAll() {
 function showSample() {
     // const samplePost = getItem({ cacheId:'cache-1', cacheName: 'post' });
     var samplePost = cacheback.getItem({ id: 2, cacheName: 'post' });
-    document.getElementById('samplePost').innerHTML = samplePost.title;
+    var samplePostUsers = cacheback.getRelatedItems({ id: 2, cacheName: 'post' }, 'user');
+    var postHTML = samplePost.title + '<br />by: ';
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = samplePostUsers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var user = _step.value;
+
+            postHTML += user.name + ' ';
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    document.getElementById('samplePost').innerHTML = postHTML;
 }
 
 /***/ }),
@@ -9330,7 +9421,14 @@ var retrievePosts = exports.retrievePosts = function () {
                                 for (var _iterator = posts[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                                     var post = _step.value;
 
-                                    (0, _cache.createItem)(post, 'post');
+                                    cache.cacheItem(post, 'post');
+                                    cache.relateIDs({
+                                        cacheName: 'post',
+                                        id: post.id
+                                    }, {
+                                        cacheName: 'user',
+                                        id: post.userId
+                                    });
                                 }
                             } catch (err) {
                                 _didIteratorError = true;
@@ -9376,7 +9474,7 @@ var retrieveUsers = exports.retrieveUsers = function () {
                                 for (var _iterator2 = users[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                                     var user = _step2.value;
 
-                                    (0, _cache.createItem)(user, 'user');
+                                    cache.cacheItem(user, 'user');
                                 }
                             } catch (err) {
                                 _didIteratorError2 = true;
@@ -9408,6 +9506,10 @@ var retrieveUsers = exports.retrieveUsers = function () {
 }();
 
 var _cache = __webpack_require__(125);
+
+var cache = _interopRequireWildcard(_cache);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
