@@ -4,7 +4,7 @@ module.exports = {
     },
     output: {
         path: __dirname,
-        filename: 'cachemoney.js'
+        filename: 'cacheback.js'
     },
     module: {
         loaders: [{

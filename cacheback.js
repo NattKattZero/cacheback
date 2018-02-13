@@ -9211,7 +9211,6 @@ var cacheback = _interopRequireWildcard(_cache);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-// import { retrievePosts, retrieveUsers } from './postdao';
 cacheback.createCache('post', 'id', postdao.retrievePosts);
 cacheback.createCache('user', 'id', postdao.retrieveUsers);
 
