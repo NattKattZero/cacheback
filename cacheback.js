@@ -3717,6 +3717,8 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var invalidateCache = exports.invalidateCache = function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(cacheName) {
         var cache;
@@ -3727,10 +3729,10 @@ var invalidateCache = exports.invalidateCache = function () {
                         cache = getCache(cacheName);
 
                         cache.data = {};
-                        return _context.abrupt("return", cache.retriever());
+                        return _context.abrupt('return', cache.retriever());
 
                     case 3:
-                    case "end":
+                    case 'end':
                         return _context.stop();
                 }
             }
@@ -3777,7 +3779,7 @@ var invalidateAll = exports.invalidateAll = function () {
 
                     case 14:
                         _context2.prev = 14;
-                        _context2.t0 = _context2["catch"](3);
+                        _context2.t0 = _context2['catch'](3);
                         _didIteratorError = true;
                         _iteratorError = _context2.t0;
 
@@ -3806,7 +3808,7 @@ var invalidateAll = exports.invalidateAll = function () {
                         return _context2.finish(18);
 
                     case 26:
-                    case "end":
+                    case 'end':
                         return _context2.stop();
                 }
             }
@@ -3826,6 +3828,7 @@ exports.getItem = getItem;
 exports.getAll = getAll;
 exports.debugPrintCaches = debugPrintCaches;
 exports.debugPrintRelationships = debugPrintRelationships;
+exports.parseCacheAddress = parseCacheAddress;
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
@@ -3855,10 +3858,13 @@ function cacheItem(item, cacheName) {
     cache.data[cacheID] = item;
     cacheIDToIDMaps[cacheName][cacheID] = key;
     idToCacheIDMaps[cacheName][key] = cacheID;
+    return item;
 }
 
-function relateIDs(lookup1, lookup2) {
-    var relationshipName = lookup1.cacheName + ":" + lookup2.cacheName;
+function relateIDs(addr1, addr2) {
+    var lookup1 = parseCacheAddress(addr1);
+    var lookup2 = parseCacheAddress(addr2);
+    var relationshipName = lookup1.cacheName + ':' + lookup2.cacheName;
     if (!(relationshipName in relationships)) {
         relationships[relationshipName] = {};
     }
@@ -3866,26 +3872,27 @@ function relateIDs(lookup1, lookup2) {
     var cacheID2 = findCacheID(lookup2);
     if (cacheID1 in relationships[relationshipName]) {
         relationships[relationshipName][cacheID1].push(cacheID2);
-        console.log("relating: " + cacheID1 + " to " + cacheID2);
     } else {
         relationships[relationshipName][cacheID1] = [cacheID2];
     }
 }
 
-function getRelatedItems(lookup, relatedCacheName) {
+function getRelatedItems(addr, relatedCacheName) {
+    var lookup = parseCacheAddress(addr);
     var cacheID = findCacheID(lookup);
-    var relationshipName = lookup.cacheName + ":" + relatedCacheName;
+    var relationshipName = lookup.cacheName + ':' + relatedCacheName;
     if (cacheID in relationships[relationshipName]) {
         var relatedIDs = relationships[relationshipName][cacheID];
         var relatedItems = relatedIDs.map(function (relatedID) {
-            return getItem({ cacheID: relatedID, cacheName: relatedCacheName });
+            return getItem(relatedCacheName + ':' + relatedID + ':');
         });
         return relatedItems;
     }
     return [];
 }
 
-function getItem(lookup) {
+function getItem(addr) {
+    var lookup = parseCacheAddress(addr);
     var cacheName = lookup.cacheName;
     var cacheID = void 0;
     if (lookup.cacheID) {
@@ -3924,7 +3931,7 @@ function getCache(cacheName) {
 function getNextCacheID(cacheName) {
     var cache = getCache(cacheName);
     if (cache) {
-        var nextCacheID = "cache-" + cache.nextID;
+        var nextCacheID = 'cache-' + cache.nextID;
         cache.nextID += 1;
         return nextCacheID;
     }
@@ -3942,6 +3949,16 @@ function findCacheID(lookup) {
     idToCacheIDMaps[lookup.cacheName][lookup.id] = cacheID;
     cacheIDToIDMaps[lookup.cacheName][cacheID] = lookup.id;
     return cacheID;
+}
+
+function parseCacheAddress(addr) {
+    var _addr$split = addr.split(':'),
+        _addr$split2 = _slicedToArray(_addr$split, 3),
+        cacheName = _addr$split2[0],
+        cacheID = _addr$split2[1],
+        id = _addr$split2[2];
+
+    return { cacheName: cacheName, cacheID: cacheID, id: id };
 }
 
 /***/ }),
@@ -9289,7 +9306,8 @@ function showAll() {
         return prevVal + ('<li rel=' + post.cacheID + '>id: ' + post.id + ', cacheID: ' + post.cacheID + ', ' + post.title + ', userID: ' + post.userId + '</li>');
     }, '');
     document.getElementById('allPosts').innerHTML = postHtml;
-    // cacheback.createItem({ name: 'Nathan Johnson' }, 'user');
+    var nathan = cacheback.cacheItem({ name: 'Nathan Johnson' }, 'user');
+    cacheback.relateIDs('post::2', 'user:' + nathan.cacheID + ':');
     var users = cacheback.getAll('user');
     var userHtml = users.reduce(function (prevVal, user) {
         return prevVal + ('<li rel=' + user.cacheID + '>id: ' + user.id + ', cacheID: ' + user.cacheID + ', ' + user.name + '</li>');
@@ -9298,9 +9316,8 @@ function showAll() {
 }
 
 function showSample() {
-    // const samplePost = getItem({ cacheId:'cache-1', cacheName: 'post' });
-    var samplePost = cacheback.getItem({ id: 2, cacheName: 'post' });
-    var samplePostUsers = cacheback.getRelatedItems({ id: 2, cacheName: 'post' }, 'user');
+    var samplePost = cacheback.getItem('post::2');
+    var samplePostUsers = cacheback.getRelatedItems('post::2', 'user');
     var postHTML = samplePost.title + '<br />by: ';
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -9422,13 +9439,7 @@ var retrievePosts = exports.retrievePosts = function () {
                                     var post = _step.value;
 
                                     cache.cacheItem(post, 'post');
-                                    cache.relateIDs({
-                                        cacheName: 'post',
-                                        id: post.id
-                                    }, {
-                                        cacheName: 'user',
-                                        id: post.userId
-                                    });
+                                    cache.relateIDs('post::' + post.id, 'user::' + post.userID);
                                 }
                             } catch (err) {
                                 _didIteratorError = true;

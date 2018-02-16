@@ -36,9 +36,12 @@ export function cacheItem(item, cacheName) {
     cache.data[cacheID] = item;
     cacheIDToIDMaps[cacheName][cacheID] = key;
     idToCacheIDMaps[cacheName][key] = cacheID;
+    return item;
 }
 
-export function relateIDs(lookup1, lookup2) {
+export function relateIDs(addr1, addr2) {
+    const lookup1 = parseCacheAddress(addr1);
+    const lookup2 = parseCacheAddress(addr2);
     const relationshipName = `${lookup1.cacheName}:${lookup2.cacheName}`;
     if (!(relationshipName in relationships)) {
         relationships[relationshipName] = {};
@@ -47,25 +50,26 @@ export function relateIDs(lookup1, lookup2) {
     const cacheID2 = findCacheID(lookup2);
     if (cacheID1 in relationships[relationshipName]) {
         relationships[relationshipName][cacheID1].push(cacheID2);
-        console.log(`relating: ${cacheID1} to ${cacheID2}`);
     }
     else {
         relationships[relationshipName][cacheID1] = [cacheID2];
     }
 }
 
-export function getRelatedItems(lookup, relatedCacheName) {
+export function getRelatedItems(addr, relatedCacheName) {
+    const lookup = parseCacheAddress(addr);
     const cacheID = findCacheID(lookup);
     const relationshipName = `${lookup.cacheName}:${relatedCacheName}`;
     if (cacheID in relationships[relationshipName]) {
         const relatedIDs = relationships[relationshipName][cacheID];
-        const relatedItems = relatedIDs.map(relatedID => getItem({ cacheID: relatedID, cacheName: relatedCacheName }));
+        const relatedItems = relatedIDs.map(relatedID => getItem(`${relatedCacheName}:${relatedID}:`));
         return relatedItems;
     }
     return [];
 }
 
-export function getItem(lookup) {
+export function getItem(addr) {
+    const lookup = parseCacheAddress(addr);
     const cacheName = lookup.cacheName;
     let cacheID;
     if (lookup.cacheID) {
@@ -123,4 +127,9 @@ function findCacheID(lookup) {
     idToCacheIDMaps[lookup.cacheName][lookup.id] = cacheID;
     cacheIDToIDMaps[lookup.cacheName][cacheID] = lookup.id;
     return cacheID;
+}
+
+export function parseCacheAddress(addr) {
+    const [ cacheName, cacheID, id ] = addr.split(':');
+    return { cacheName, cacheID, id };
 }

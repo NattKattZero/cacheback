@@ -16,14 +16,7 @@ export async function retrievePosts() {
     return getPosts().then(posts => {
         for (let post of posts) {
             cache.cacheItem(post, 'post');
-            cache.relateIDs({
-                cacheName: 'post',
-                id: post.id
-            },
-            {
-                cacheName: 'user',
-                id: post.userId
-            });
+            cache.relateIDs(`post::${post.id}`, `user::${post.userID}`);
         }
     });
 }
