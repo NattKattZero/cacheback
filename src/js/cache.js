@@ -62,7 +62,7 @@ export function getRelatedItems(addr, relatedCacheName) {
     const relationshipName = `${lookup.cacheName}:${relatedCacheName}`;
     if (cacheID in relationships[relationshipName]) {
         const relatedIDs = relationships[relationshipName][cacheID];
-        const relatedItems = relatedIDs.map(relatedID => getItem(`${relatedCacheName}:${relatedID}:`));
+        const relatedItems = relatedIDs.map(relatedID => getItem(`${relatedCacheName}:${relatedID}|`));
         return relatedItems;
     }
     return [];
@@ -130,6 +130,9 @@ function findCacheID(lookup) {
 }
 
 export function parseCacheAddress(addr) {
-    const [ cacheName, cacheID, id ] = addr.split(':');
+    console.log(`parsingAddr...${addr}`);
+    const [ cacheName, ids ] = addr.split(':');
+    const [ id, cacheID ] = ids.split('|');
+    console.log(`parsing...${cacheName} : ${id} | ${cacheID}`);
     return { cacheName, cacheID, id };
 }

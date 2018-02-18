@@ -3884,7 +3884,7 @@ function getRelatedItems(addr, relatedCacheName) {
     if (cacheID in relationships[relationshipName]) {
         var relatedIDs = relationships[relationshipName][cacheID];
         var relatedItems = relatedIDs.map(function (relatedID) {
-            return getItem(relatedCacheName + ':' + relatedID + ':');
+            return getItem(relatedCacheName + ':' + relatedID + '|');
         });
         return relatedItems;
     }
@@ -3952,12 +3952,19 @@ function findCacheID(lookup) {
 }
 
 function parseCacheAddress(addr) {
-    var _addr$split = addr.split(':'),
-        _addr$split2 = _slicedToArray(_addr$split, 3),
-        cacheName = _addr$split2[0],
-        cacheID = _addr$split2[1],
-        id = _addr$split2[2];
+    console.log('parsingAddr...' + addr);
 
+    var _addr$split = addr.split(':'),
+        _addr$split2 = _slicedToArray(_addr$split, 2),
+        cacheName = _addr$split2[0],
+        ids = _addr$split2[1];
+
+    var _ids$split = ids.split('|'),
+        _ids$split2 = _slicedToArray(_ids$split, 2),
+        id = _ids$split2[0],
+        cacheID = _ids$split2[1];
+
+    console.log('parsing...' + cacheName + ' : ' + id + ' | ' + cacheID);
     return { cacheName: cacheName, cacheID: cacheID, id: id };
 }
 
@@ -9307,7 +9314,7 @@ function showAll() {
     }, '');
     document.getElementById('allPosts').innerHTML = postHtml;
     var nathan = cacheback.cacheItem({ name: 'Nathan Johnson' }, 'user');
-    cacheback.relateIDs('post::2', 'user:' + nathan.cacheID + ':');
+    cacheback.relateIDs('post:2|', 'user:|' + nathan.cacheID);
     var users = cacheback.getAll('user');
     var userHtml = users.reduce(function (prevVal, user) {
         return prevVal + ('<li rel=' + user.cacheID + '>id: ' + user.id + ', cacheID: ' + user.cacheID + ', ' + user.name + '</li>');
@@ -9316,8 +9323,8 @@ function showAll() {
 }
 
 function showSample() {
-    var samplePost = cacheback.getItem('post::2');
-    var samplePostUsers = cacheback.getRelatedItems('post::2', 'user');
+    var samplePost = cacheback.getItem('post:2|');
+    var samplePostUsers = cacheback.getRelatedItems('post:2|', 'user');
     var postHTML = samplePost.title + '<br />by: ';
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -9439,7 +9446,7 @@ var retrievePosts = exports.retrievePosts = function () {
                                     var post = _step.value;
 
                                     cache.cacheItem(post, 'post');
-                                    cache.relateIDs('post::' + post.id, 'user::' + post.userID);
+                                    cache.relateIDs('post:' + post.id + '|', 'user:' + post.userId + '|');
                                 }
                             } catch (err) {
                                 _didIteratorError = true;
