@@ -31,19 +31,34 @@ test('Cache.cacheItem', t => {
     const userItem = { id: 1, name: 'testUser' };
     const cachedItem = userCache.cacheItem(userItem);
     t.ok(cachedItem, 'should return a cached item');
+    t.ok(cachedItem.cacheID, 'newly cached item should have a cacheID');
     t.equal(cachedItem.id, userItem.id, 'cached pk should equal item pk');
     t.equal(cachedItem.name, userItem.name, 'cached name should equal item name');
     t.end();
 });
 
-test('Cache.getItem', t => {
+test('Cache.getItemByCacheID', t => {
+    const userCache = new Cache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = userCache.cacheItem(userItem);
+    t.ok(cachedItem, 'should return the item that was cached');
+    t.ok(cachedItem.cacheID, 'cached item should have a cache ID');
+    const retrievedItem = userCache.getItemByCacheID(cachedItem.cacheID);
+    t.ok(retrievedItem, 'should return a cached item for the given cacheID');
+    t.equal(retrievedItem.cacheID, cachedItem.cacheID, 'retrieved item\'s cacheID should match the cached item\'s cacheID');
+    t.equal(retrievedItem.id, userItem.id, 'retrieved pk should equal item pk');
+    t.equal(retrievedItem.name, userItem.name, 'retrieved name should equal item name');
+    t.end();
+});
+
+test('Cache.getItemByPK', t => {
     const userCache = new Cache('user', 'id', null);
     const userItem = { id: 1, name: 'testUser' };
     userCache.cacheItem(userItem);
-    const retrievedItem = userCache.getItem(1);
+    const retrievedItem = userCache.getItemByPK(1);
     t.ok(retrievedItem, 'should return a cached item');
-    t.equal(retrievedItem.id, userItem.id, 'cached pk should equal item pk');
-    t.equal(retrievedItem.name, userItem.name, 'cached name should equal item name');
+    t.equal(retrievedItem.id, userItem.id, 'retrieved pk should equal item pk');
+    t.equal(retrievedItem.name, userItem.name, 'retrieved name should equal item name');
     t.end();
 });
 

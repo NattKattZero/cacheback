@@ -3,6 +3,9 @@ export class Cache {
         this.name = name;
         this.pk = pk;
         this.retriever = retriever;
+        this.nextCacheID = 1;
+        this.pkToCacheIDMap = {};
+        this.cacheIDToPKMap = {};
         this.data = {};
     }
 
@@ -12,12 +15,23 @@ export class Cache {
 
     cacheItem(item) {
         const pk = item[this.pk];
-        this.data[pk] = item;
+        item.cacheID = `${this.name}:${this.nextCacheID}`;
+        if (pk) {
+            this.pkToCacheIDMap[pk] = item.cacheID;
+            this.cacheIDToPKMap[item.cacheID] = pk;
+        }
+        this.nextCacheID += 1;
+        this.data[item.cacheID] = item;
         return item;
     }
 
-    getItem(pk) {
-        return this.data[pk];
+    getItemByPK(pk) {
+        const cacheID = this.pkToCacheIDMap[pk];
+        return this.getItemByCacheID(cacheID);
+    }
+
+    getItemByCacheID(cacheID) {
+        return this.data[cacheID];
     }
 }
 
