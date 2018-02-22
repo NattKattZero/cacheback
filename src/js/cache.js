@@ -33,6 +33,11 @@ export class Cache {
     getItemByCacheID(cacheID) {
         return this.data[cacheID];
     }
+
+    updateItem(item) {
+        this.data[item.cacheID] = item;
+        return item;
+    }
 }
 
 export class CacheCollection {

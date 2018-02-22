@@ -62,6 +62,20 @@ test('Cache.getItemByPK', t => {
     t.end();
 });
 
+test('Cache.updateItem', t => {
+    const userCache = new Cache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = userCache.cacheItem(userItem);
+    t.ok(cachedItem, 'should return the item that was cached');
+    const newUserNameItem = { id: cachedItem.id, cacheID: cachedItem.cacheID, name: 'updatedTestUser' };
+    const updatedUserItem = userCache.updateItem(newUserNameItem);
+    t.ok(updatedUserItem, 'should return an updated item');
+    t.equal(newUserNameItem.id, updatedUserItem.id, 'new and updated item\'s pks should match');
+    t.equal(newUserNameItem.cacheID, updatedUserItem.cacheID, 'new and updated item\'s cacheID should match');
+    t.equal(newUserNameItem.name, updatedUserItem.name, 'new and updated item\'s name should match');
+    t.end();
+});
+
 /*
  * CacheCollection tests
  */
