@@ -76,6 +76,19 @@ test('Cache.updateItem', t => {
     t.end();
 });
 
+test('Cache.deleteItem', t => {
+    const userCache = new Cache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = userCache.cacheItem(userItem);
+    t.ok(cachedItem, 'should return the item that was cached');
+    const removedItem = userCache.deleteItem(cachedItem);
+    t.ok(removedItem, 'removed item should be returned');
+    t.deepEqual(removedItem, cachedItem, 'returned removed item should match original cached item');
+    const retrievedItem = userCache.getItemByCacheID(cachedItem.cacheID);
+    t.notOk(retrievedItem, 'should not be able to retrieve item from cache now that it has been removed');
+    t.end();
+});
+
 /*
  * CacheCollection tests
  */

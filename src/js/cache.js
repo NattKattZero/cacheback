@@ -36,6 +36,11 @@ export class Cache {
 
     updateItem(item) {
         this.data[item.cacheID] = item;
+        return item;``
+    }
+
+    deleteItem(item) {
+        delete this.data[item.cacheID];
         return item;
     }
 }
