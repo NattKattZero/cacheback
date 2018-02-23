@@ -1,8 +1,8 @@
 export class Cache {
-    constructor(name, pk, retriever) {
+    constructor(name, pk, dao) {
         this.name = name;
         this.pk = pk;
-        this.retriever = retriever;
+        this.dao = dao;
         this.nextCacheID = 1;
         this.pkToCacheIDMap = {};
         this.cacheIDToPKMap = {};
@@ -10,7 +10,7 @@ export class Cache {
     }
 
     invalidate() {
-        this.retriever();
+        this.dao.retrieveItems();
     }
 
     cacheItem(item) {
@@ -61,4 +61,12 @@ export class CacheCollection {
 
     getItem(cacheName, cacheID, pk) {}
     resolve(cacheAddress) {}
+}
+
+export class DAO {
+    constructor() {}
+    retrieveItems() {}
+    createItem(item) {}
+    updateItem(item) {}
+    deleteItem(item) {}
 }

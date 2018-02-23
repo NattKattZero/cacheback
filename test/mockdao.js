@@ -1,3 +1,5 @@
+import { DAO } from '../src/js/cache';
+
 const users = {
     1: {
         id: 1,
@@ -14,9 +16,24 @@ const emailAddresses = {
     }
 }
 
-export function retrieveUsers() {
-    for (let user of Object.values(users)) {
-        console.log(user);
+export class StubDAO extends DAO {
+    constructor(t) {
+        super();
+        this.t = t;
+    }
+
+    retrieveItems() {
+        this.t.end();
+    }
+
+    createItem(item) {
+        this.t.end();
+    }
+    updateItem(item) {
+        this.t.end();
+    }
+
+    deleteItem(item) {
+        this.t.end();
     }
 }
-

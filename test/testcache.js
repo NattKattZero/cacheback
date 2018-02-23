@@ -1,6 +1,6 @@
 import { test } from 'tape';
-import * as mockdao from './mockdao';
-import { CacheCollection, Cache } from '../src/js/cache';
+import { StubDAO } from './mockdao';
+import { CacheCollection, Cache, DAO } from '../src/js/cache';
 
 /*
  * Cache tests
@@ -9,20 +9,17 @@ import { CacheCollection, Cache } from '../src/js/cache';
 test('create Cache', t => {
     const cacheName = 'user';
     const pk = 'primaryKey';
-    const retriever = () => {};
-    const userCache = new Cache(cacheName, pk, retriever);
+    const stubDAO = new StubDAO(t);
+    const userCache = new Cache(cacheName, pk, stubDAO);
     t.ok(userCache, 'should return a cache instance');
     t.equal(userCache.name, cacheName, 'cache name should match what was passed into constructor');
     t.equal(userCache.pk, pk, 'pk should match what was passed into constructor');
-    t.equal(userCache.retriever, retriever, 'retriever should match what was passed into constructor');
+    t.equal(userCache.dao, stubDAO, 'retriever should match what was passed into constructor');
     t.end();
 });
 
 test('Cache.invalidate', t => {
-    const retriever = (cache) => {
-        t.end();
-    };
-    const userCache = new Cache('user', 'id', retriever);
+    const userCache = new Cache('user', 'id', new StubDAO(t));
     userCache.invalidate();
 });
 
