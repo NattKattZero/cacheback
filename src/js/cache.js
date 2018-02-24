@@ -25,6 +25,11 @@ export class Cache {
         return item;
     }
 
+    createItem(item) {
+        const cachedItem = this.cacheItem(item);
+        return cachedItem;
+    }
+
     getItemByPK(pk) {
         const cacheID = this.pkToCacheIDMap[pk];
         return this.getItemByCacheID(cacheID);

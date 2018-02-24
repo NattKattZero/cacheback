@@ -34,6 +34,17 @@ test('Cache.cacheItem', t => {
     t.end();
 });
 
+test('Cache.createItem', t => {
+    const userCache = new Cache('user', 'id', null);
+    const userItem = { name: 'testUser' };
+    const cachedItem = userCache.createItem(userItem);
+    t.ok(cachedItem, 'should return a cached item');
+    t.ok(cachedItem.cacheID, 'newly cached item should have a cacheID');
+    t.notOk(cachedItem.id, 'cached pk should not yet exist');
+    t.equal(cachedItem.name, userItem.name, 'cached name should equal item name');
+    t.end();
+});
+
 test('Cache.getItemByCacheID', t => {
     const userCache = new Cache('user', 'id', null);
     const userItem = { id: 1, name: 'testUser' };
