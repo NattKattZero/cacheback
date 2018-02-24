@@ -71,6 +71,12 @@ export class CacheCollection {
         return this.caches[cacheName];
     }
 
+    cacheItem(item, cacheName) {
+        const cache = this.getCache(cacheName);
+        const cachedItem = cache.cacheItem(item);
+        return cachedItem;
+    }
+
     getItem(cacheName, cacheID, pk) {}
     resolve(cacheAddress) {}
 }

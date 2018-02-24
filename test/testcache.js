@@ -112,8 +112,10 @@ test('Cache.commit', t => {
 
 test('CacheCollection.createCache', t => {
     const caches = new CacheCollection();
-    const userCache = caches.createCache(('user', 'id', null));
+    const userCache = caches.createCache('user', 'id', null);
     t.ok(userCache, 'should return the new cache');
+    t.equal(userCache.name, 'user', 'cache name should match what was sent in');
+    t.equal(userCache.pk, 'id', 'pk should match what was sent in');
     t.end();
 });
 
@@ -127,3 +129,14 @@ test('CacheCollection.getCache', t => {
     t.end();
 });
 
+test('CacheCollection.cacheItem', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const newUser = { id: 1, name:'testUser' };
+    const cachedUser = caches.cacheItem(newUser, 'user');
+    t.ok(cachedUser, 'should return cached item');
+    t.equal(cachedUser.id, newUser.id, 'pk should match item that was passed in');
+    t.equal(cachedUser.name, newUser.name, 'name should match item that was passed in');
+    t.ok(cachedUser.cacheID, 'cached item should have a cacheID');
+    t.end();
+});
