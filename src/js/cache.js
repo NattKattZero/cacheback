@@ -61,8 +61,9 @@ export class CacheCollection {
         this.caches = {};
     }
 
-    addCache(cache) {
-        this.caches[cache.name] = cache;
+    createCache(name, pk, dao) {
+        const cache = new Cache(name, pk, dao);
+        this.caches[name] = cache;
         return cache;
     }
 

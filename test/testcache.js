@@ -110,22 +110,20 @@ test('Cache.commit', t => {
  * CacheCollection tests
  */
 
-test('CacheCollection.addCache', t => {
+test('CacheCollection.createCache', t => {
     const caches = new CacheCollection();
-    const userCache = new Cache('user', 'id', null);
-    const addedCache = caches.addCache(userCache);
-    t.ok(addedCache, 'should return the added cache');
-    t.deepEqual(addedCache, userCache, 'returned cache should equal the one we created');
+    const userCache = caches.createCache(('user', 'id', null));
+    t.ok(userCache, 'should return the new cache');
     t.end();
 });
 
 test('CacheCollection.getCache', t => {
     const caches = new CacheCollection();
-    const userCache = new Cache('user', 'id', null);
-    const addedCache = caches.addCache(userCache);
-    t.ok(addedCache, 'should return the newly added cache');
+    const userCache = caches.createCache('user', 'id', null);
+    t.ok(userCache, 'should return the newly created cache');
     const retrievedCache = caches.getCache('user');
     t.ok(retrievedCache, 'should return a cache with this cache name');
     t.deepEqual(retrievedCache, userCache, 'cache retrieved should match the one added');
     t.end();
 });
+
