@@ -48,6 +48,12 @@ export class Cache {
         delete this.data[item.cacheID];
         return item;
     }
+
+    commit() {
+        this.dao.createItem(null);
+        this.dao.updateItem(null);
+        this.dao.deleteItem(null);
+    }
 }
 
 export class CacheCollection {

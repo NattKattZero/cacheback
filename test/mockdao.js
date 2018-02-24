@@ -23,17 +23,17 @@ export class StubDAO extends DAO {
     }
 
     retrieveItems() {
-        this.t.end();
+        this.t.pass('retrieveItems was called');
     }
 
     createItem(item) {
-        this.t.end();
+        this.t.pass('createItem was called');
     }
     updateItem(item) {
-        this.t.end();
+        this.t.pass('updateItem was called');
     }
 
     deleteItem(item) {
-        this.t.end();
+        this.t.pass('deleteItem was called');
     }
 }

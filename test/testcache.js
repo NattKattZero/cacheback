@@ -20,6 +20,7 @@ test('create Cache', t => {
 
 test('Cache.invalidate', t => {
     const userCache = new Cache('user', 'id', new StubDAO(t));
+    t.plan(1);
     userCache.invalidate();
 });
 
@@ -95,6 +96,13 @@ test('Cache.deleteItem', t => {
     const retrievedItem = userCache.getItemByCacheID(cachedItem.cacheID);
     t.notOk(retrievedItem, 'should not be able to retrieve item from cache now that it has been removed');
     t.end();
+});
+
+test('Cache.commit', t => {
+    const dao = new StubDAO(t);
+    const userCache = new Cache('user', 'id', dao);
+    t.plan(3);
+    userCache.commit();
 });
 
 /*
