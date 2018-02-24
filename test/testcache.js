@@ -103,6 +103,7 @@ test('Cache.commit', t => {
     const userCache = new Cache('user', 'id', dao);
     t.plan(3);
     userCache.commit();
+    t.end();
 });
 
 /*
