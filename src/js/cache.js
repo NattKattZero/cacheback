@@ -15,7 +15,7 @@ export class Cache {
 
     cacheItem(item) {
         const pk = item[this.pk];
-        item.cacheID = `${this.name}:${this.nextCacheID}`;
+        item.cacheID = `${this.name}-${this.nextCacheID}`;
         if (pk) {
             this.pkToCacheIDMap[pk] = item.cacheID;
             this.cacheIDToPKMap[item.cacheID] = pk;
@@ -77,8 +77,36 @@ export class CacheCollection {
         return cachedItem;
     }
 
-    getItem(cacheName, cacheID, pk) {}
-    resolve(cacheAddress) {}
+    getItem(cacheID) {
+        const cacheName = this.getCacheName(cacheID);
+        const cache = this.getCache(cacheName);
+        return cache.getItemByCacheID(cacheID);
+    }
+
+    getItemByPK(pk, cacheName) {
+        const cache = this.getCache(cacheName);
+        return cache.getItemByPK(pk);
+    }
+
+    createItem(item, cacheName) {
+        const cache = this.getCache(cacheName);
+        return cache.createItem(item);
+    }
+
+    updateItem(item, cacheName) {
+        const cache = this.getCache(cacheName);
+        return cache.updateItem(item);
+    }
+
+    deleteItem(item, cacheName) {
+        const cache = this.getCache(cacheName);
+        return cache.deleteItem(item);
+    }
+
+    getCacheName(cacheID) {
+        const [ cacheName ] = cacheID.split('-');
+        return cacheName;
+    }
 }
 
 export class DAO {
