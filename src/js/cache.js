@@ -145,12 +145,8 @@ export class CacheCollection {
         const cacheID1 = cache1.getCacheIDForPK(relInfo.pk);
         const rel = this.relationships[relName];
         const relatedCacheIDs = rel[cacheID1];
-        let relatedItems = [];
         const cache2 = this.getCache(relInfo.relatedCacheName);
-        for (let cacheID of relatedCacheIDs) {
-            let item = cache2.getItemByCacheID(cacheID);
-            relatedItems.push(item);
-        }
+        const relatedItems = relatedCacheIDs.map(cacheID => cache2.getItemByCacheID(cacheID));
         return relatedItems;
     }
 
