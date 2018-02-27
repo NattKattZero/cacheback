@@ -31,12 +31,17 @@ export class Cache {
     }
 
     getItemByPK(pk) {
-        const cacheID = this.pkToCacheIDMap[pk];
+        const cacheID = this.getCacheIDForPK(pk);
         return this.getItemByCacheID(cacheID);
     }
 
     getItemByCacheID(cacheID) {
         return this.data[cacheID];
+    }
+
+    getCacheIDForPK(pk) {
+        const cacheID = this.pkToCacheIDMap[pk];
+        return cacheID;
     }
 
     updateItem(item) {
@@ -59,6 +64,7 @@ export class Cache {
 export class CacheCollection {
     constructor() {
         this.caches = {};
+        this.relationships = {};
     }
 
     createCache(name, pk, dao) {
@@ -101,6 +107,51 @@ export class CacheCollection {
     deleteItem(item, cacheName) {
         const cache = this.getCache(cacheName);
         return cache.deleteItem(item);
+    }
+
+    relateItems(relInfo) {
+        const relName = `${relInfo.cacheName1}-${relInfo.cacheName2}`;
+        const cache1 = this.getCache(relInfo.cacheName1);
+        const cacheID1 = cache1.getCacheIDForPK(relInfo.pk1);
+        const inverseRelName = `${relInfo.cacheName2}-${relInfo.cacheName1}`;
+        const cache2 = this.getCache(relInfo.cacheName2);
+        const cacheID2 = cache2.getCacheIDForPK(relInfo.pk2);
+        let rel;
+        rel = this.relationships[relName];
+        if (!rel) {
+            rel = {}
+            this.relationships[relName] = rel;
+        }
+        if (!(cacheID1 in rel)) {
+            rel[cacheID1] = [];
+        }
+        let inverseRel;
+        inverseRel = this.relationships[inverseRelName];
+        if (!inverseRel) {
+            inverseRel = {};
+            this.relationships[inverseRelName] = inverseRel;
+            
+        }
+        if (!(cacheID2 in inverseRel)) {
+            inverseRel[cacheID2] = [];
+        }
+        rel[cacheID1].push(cacheID2);
+        inverseRel[cacheID2].push(cacheID1);
+    }
+
+    getRelatedItems(relInfo) {
+        const relName = `${relInfo.cacheName}-${relInfo.relatedCacheName}`;
+        const cache1 = this.getCache(relInfo.cacheName);
+        const cacheID1 = cache1.getCacheIDForPK(relInfo.pk);
+        const rel = this.relationships[relName];
+        const relatedCacheIDs = rel[cacheID1];
+        let relatedItems = [];
+        const cache2 = this.getCache(relInfo.relatedCacheName);
+        for (let cacheID of relatedCacheIDs) {
+            let item = cache2.getItemByCacheID(cacheID);
+            relatedItems.push(item);
+        }
+        return relatedItems;
     }
 
     getCacheName(cacheID) {

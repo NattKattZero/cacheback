@@ -134,3 +134,24 @@ test('CacheCollection.deleteItem', t => {
     t.notOk(retrievedItem, 'should not be able to retrieve item from cache now that it has been removed');
     t.end();
 });
+
+test('CacheCollection.relateItems', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const emailCache = caches.createCache('email', 'id', null);
+    caches.cacheItem({ id: 1, name: 'userA' }, 'user');
+    const email1 = { id: 1, address: 'userA@example.com' };
+    caches.cacheItem(email1, 'email');
+    const email2 = { id: 2, address: 'userA.2@example.com' };
+    caches.cacheItem(email2, 'email');
+    caches.relateItems({ pk1: 1, cacheName1: 'user', pk2: 1, cacheName2: 'email' });
+    caches.relateItems({ pk1: 1, cacheName1: 'user', pk2: 2, cacheName2: 'email' });
+    const relatedEmails = caches.getRelatedItems({ pk: 1, cacheName: 'user', relatedCacheName: 'email' });
+    t.equal(relatedEmails.length, 2, 'should get 2 related email addresses');
+    const [ relatedEmail1, relatedEmail2 ] = relatedEmails;
+    t.equal(relatedEmail1.id, email1.id, 'first related email id should match first email id');
+    t.equal(relatedEmail1.address, email1.address, 'first related email address should match first email address');
+    t.equal(relatedEmail2.id, email2.id, 'second related email id should match second email id');
+    t.equal(relatedEmail2.address, email2.address, 'second related email address should match second email address');
+    t.end();
+});
