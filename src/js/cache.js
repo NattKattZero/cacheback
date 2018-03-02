@@ -65,6 +65,7 @@ export class CacheCollection {
     constructor() {
         this.caches = {};
         this.relationships = {};
+        this.pendingOperations = [];
     }
 
     createCache(name, pk, dao) {
@@ -96,17 +97,23 @@ export class CacheCollection {
 
     createItem(item, cacheName) {
         const cache = this.getCache(cacheName);
-        return cache.createItem(item);
+        const newItem = cache.createItem(item);
+        this.addPendingOperation(CacheCollection.CREATE_OPER, item.cacheID);
+        return newItem;
     }
 
     updateItem(item, cacheName) {
         const cache = this.getCache(cacheName);
-        return cache.updateItem(item);
+        const updatedItem = cache.updateItem(item);
+        this.addPendingOperation(CacheCollection.UPDATE_OPER, updatedItem.cacheID);
+        return updatedItem;
     }
 
     deleteItem(item, cacheName) {
         const cache = this.getCache(cacheName);
-        return cache.deleteItem(item);
+        const deletedItem = cache.deleteItem(item);
+        this.addPendingOperation(CacheCollection.DELETE_OPER, deletedItem.cacheID);
+        return deletedItem;
     }
 
     relateItems(relInfo) {
@@ -154,7 +161,34 @@ export class CacheCollection {
         const [ cacheName ] = cacheID.split('-');
         return cacheName;
     }
+
+    addPendingOperation(operation, cacheID) {
+        this.pendingOperations.push({ operation, cacheID });
+    }
+
+    commit() {
+        for (let operation of this.pendingOperations) {
+            const cacheName = this.getCacheName(operation.cacheID);
+            const cache = this.getCache(cacheName);
+            const item = cache.getItemByCacheID(operation.cacheID);
+            switch (operation.operation) {
+            case CacheCollection.CREATE_OPER:
+                cache.dao.createItem(item);
+                break;
+            case CacheCollection.UPDATE_OPER:
+                cache.dao.updateItem(item);
+                break;
+            case CacheCollection.DELETE_OPER:
+                cache.dao.deleteItem(item);
+            }
+        }
+        this.pendingOperations = [];
+    }
 }
+
+CacheCollection.CREATE_OPER = 1;
+CacheCollection.UPDATE_OPER = 2;
+CacheCollection.DELETE_OPER = 3;
 
 export class DAO {
     constructor() {}

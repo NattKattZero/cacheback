@@ -155,3 +155,15 @@ test('CacheCollection.relateItems', t => {
     t.equal(relatedEmail2.address, email2.address, 'second related email address should match second email address');
     t.end();
 });
+
+test('CacheCollection.commit', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', new StubDAO(t));
+    const emailCache = caches.createCache('email', 'id', new StubDAO(t));
+    caches.createItem({ id: 1, name: 'userA' }, 'user');
+    caches.createItem({ id: 2, name: 'userB' }, 'user');
+    caches.createItem({ id: 1, name: 'userA@example.com' }, 'email');
+    t.plan(3);
+    caches.commit();
+    t.end();
+});
