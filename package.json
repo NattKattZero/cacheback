@@ -1,15 +1,15 @@
 {
-  "name": "wpfun",
+  "name": "cacheback",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Javascript caching library.",
   "main": "app.js",
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
     "test": "babel-node --presets env test/test*.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Nathan Johnson <nwjohnson@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
