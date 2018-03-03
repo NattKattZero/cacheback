@@ -15,12 +15,7 @@ export class Cache {
 
     cacheItem(item) {
         const pk = item[this.pk];
-        item.cacheID = `${this.name}-${this.nextCacheID}`;
-        if (pk) {
-            this.pkToCacheIDMap[pk] = item.cacheID;
-            this.cacheIDToPKMap[item.cacheID] = pk;
-        }
-        this.nextCacheID += 1;
+        item.cacheID = this.getOrCreateCacheIDForPK(pk);
         this.data[item.cacheID] = item;
         return item;
     }
@@ -44,6 +39,18 @@ export class Cache {
         return cacheID;
     }
 
+    getOrCreateCacheIDForPK(pk) {
+        let cacheID = this.getCacheIDForPK(pk);
+        if (!cacheID) {
+            cacheID = this.generateCacheID();
+            if (pk) {
+                this.pkToCacheIDMap[pk] = cacheID;
+                this.cacheIDToPKMap[cacheID] = pk;
+            }
+        }
+        return cacheID;
+    }
+
     updateItem(item) {
         this.data[item.cacheID] = item;
         return item;``
@@ -52,6 +59,12 @@ export class Cache {
     deleteItem(item) {
         delete this.data[item.cacheID];
         return item;
+    }
+
+    generateCacheID() {
+        const cacheID = `${this.name}-${this.nextCacheID}`;
+        this.nextCacheID += 1;
+        return cacheID;
     }
 
     commit() {
@@ -122,7 +135,7 @@ export class CacheCollection {
         const cacheID1 = cache1.getCacheIDForPK(relInfo.pk1);
         const inverseRelName = `${relInfo.cacheName2}-${relInfo.cacheName1}`;
         const cache2 = this.getCache(relInfo.cacheName2);
-        const cacheID2 = cache2.getCacheIDForPK(relInfo.pk2);
+        const cacheID2 = cache2.getOrCreateCacheIDForPK(relInfo.pk2);
         let rel;
         rel = this.relationships[relName];
         if (!rel) {
