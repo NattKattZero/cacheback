@@ -6,18 +6,6 @@ import { CacheCollection, Cache, DAO } from '../src/js/cache';
  * Cache tests
  */
 
-test('create Cache', t => {
-    const cacheName = 'user';
-    const pk = 'primaryKey';
-    const stubDAO = new StubDAO(t);
-    const userCache = new Cache(cacheName, pk, stubDAO);
-    t.ok(userCache, 'should return a cache instance');
-    t.equal(userCache.name, cacheName, 'cache name should match what was passed into constructor');
-    t.equal(userCache.pk, pk, 'pk should match what was passed into constructor');
-    t.equal(userCache.dao, stubDAO, 'retriever should match what was passed into constructor');
-    t.end();
-});
-
 test('Cache.invalidate', t => {
     const userCache = new Cache('user', 'id', new StubDAO(t));
     t.plan(1);
