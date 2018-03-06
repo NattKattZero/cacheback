@@ -33,6 +33,20 @@ test('CacheCollection.createCache', t => {
     t.end();
 });
 
+test('CacheCollection.createCache without cacheName', t => {
+    const caches = new CacheCollection();
+    const badCache = caches.createCache(null, 'id', null);
+    t.notOk(badCache, 'should not return a valid cache since name was not provided');
+    t.end();
+});
+
+test('CacheCollection.createCache without pk', t => {
+    const caches = new CacheCollection();
+    const badCache = caches.createCache('user', null, null);
+    t.notOk(badCache, 'should not return a valid cache since pk was not provided');
+    t.end();
+});
+
 test('CacheCollection.getCache', t => {
     const caches = new CacheCollection();
     const userCache = caches.createCache('user', 'id', null);
@@ -40,6 +54,13 @@ test('CacheCollection.getCache', t => {
     const retrievedCache = caches.getCache('user');
     t.ok(retrievedCache, 'should return a cache with this cache name');
     t.deepEqual(retrievedCache, userCache, 'cache retrieved should match the one added');
+    t.end();
+});
+
+test('CacheCollection.getCache for cache name that does not exist', t => {
+    const caches = new CacheCollection();
+    const retrievedCache = caches.getCache('user');
+    t.notOk(retrievedCache, 'should not return a cache with this cache name');
     t.end();
 });
 

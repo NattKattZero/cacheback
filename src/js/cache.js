@@ -82,6 +82,9 @@ export class CacheCollection {
     }
 
     createCache(name, pk, dao) {
+        if (!name || !pk) {
+            return null;
+        }
         const cache = new Cache(name, pk, dao);
         this.caches[name] = cache;
         return cache;
