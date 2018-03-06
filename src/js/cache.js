@@ -106,6 +106,9 @@ export class CacheCollection {
     getItem(cacheID) {
         const cacheName = this.getCacheName(cacheID);
         const cache = this.getCache(cacheName);
+        if (!cache) {
+            return null;
+        }
         return cache.getItemByCacheID(cacheID);
     }
 
@@ -177,6 +180,9 @@ export class CacheCollection {
     }
 
     getCacheName(cacheID) {
+        if (!cacheID) {
+            return null;
+        }
         const [ cacheName ] = cacheID.split('-');
         return cacheName;
     }

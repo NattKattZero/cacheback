@@ -123,6 +123,50 @@ test('CacheCollection.getItem', t => {
     t.end();
 });
 
+test('CacheCollection.getItem with bad cacheID where cache exists', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = caches.cacheItem(userItem, 'user');
+    t.ok(cachedItem, 'should return the item that was cached');
+    t.ok(cachedItem.cacheID, 'cached item should have a cache ID');
+    const retrievedItem = caches.getItem('user-999');
+    t.notOk(retrievedItem, 'should not return a cached item for the given cacheID');
+    t.end();
+});
+
+test('CacheCollection.getItem with bad cacheID where cache does not exist', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = caches.cacheItem(userItem, 'user');
+    t.ok(cachedItem, 'should return the item that was cached');
+    t.ok(cachedItem.cacheID, 'cached item should have a cache ID');
+    const retrievedItem = caches.getItem('badcache-1');
+    t.notOk(retrievedItem, 'should not return a cached item for the given cacheID');
+    t.end();
+});
+
+test('CacheCollection.getItem with malformed cacheID', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = caches.cacheItem(userItem, 'user');
+    t.ok(cachedItem, 'should return the item that was cached');
+    t.ok(cachedItem.cacheID, 'cached item should have a cache ID');
+    const missingCacheNameItem = caches.getItem('-1');
+    t.notOk(missingCacheNameItem, 'should not return a cached item if cacheID is missing name');
+    const missingIDItem = caches.getItem('user-');
+    t.notOk(missingIDItem, 'should not return a cached item if cacheID is ID portion');
+    const missingCacheNameAndIDItem = caches.getItem('-');
+    t.notOk(missingCacheNameAndIDItem, 'should not return a cached item if cacheID is name and ID portion');
+    const missingDashItem = caches.getItem('user1');
+    t.notOk(missingDashItem, 'should not return a cached item if cacheID is missing dash');
+    const nullCacheID = caches.getItem(null);
+    t.notOk(nullCacheID, 'should not return a cached item if cacheID is null');
+    t.end();
+});
+
 test('CacheCollection.getItemByPK', t => {
     const caches = new CacheCollection();
     const userCache = caches.createCache('user', 'id', null);
