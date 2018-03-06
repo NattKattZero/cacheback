@@ -96,6 +96,9 @@ export class CacheCollection {
 
     cacheItem(item, cacheName) {
         const cache = this.getCache(cacheName);
+        if (!cache) {
+            return null;
+        }
         const cachedItem = cache.cacheItem(item);
         return cachedItem;
     }

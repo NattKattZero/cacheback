@@ -76,6 +76,26 @@ test('CacheCollection.cacheItem', t => {
     t.end();
 });
 
+test('CacheCollection.cacheItem for cache that does not exist', t => {
+    const caches = new CacheCollection();
+    const userItem = { id: 1, name: 'testUser' };
+    const cachedItem = caches.cacheItem(userItem, 'user');
+    t.notOk(cachedItem, 'should not return a cached item');
+    t.end();
+});
+
+test('CacheCollection.cacheItem without pk', t => {
+    const caches = new CacheCollection();
+    const userCache = caches.createCache('user', 'id', null);
+    const userItem = { name: 'testUser' };
+    const cachedItem = caches.cacheItem(userItem, 'user');
+    t.ok(cachedItem, 'should return a cached item');
+    t.ok(cachedItem.cacheID, 'newly cached item should have a cacheID');
+    t.notOk(cachedItem.id, 'cached item should not have a pk');
+    t.equal(cachedItem.name, userItem.name, 'cached name should equal item name');
+    t.end();
+});
+
 test('CacheCollection.createItem', t => {
     const caches = new CacheCollection();
     const userCache = caches.createCache('user', 'id', null);
