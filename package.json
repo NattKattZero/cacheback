@@ -1,8 +1,8 @@
 {
-  "name": "cacheback",
-  "version": "1.0.0",
-  "description": "A Javascript caching library.",
-  "main": "app.js",
+  "name": "cousin",
+  "version": "0.1.0",
+  "description": "A Javascript relationship library.",
+  "main": "index.js",
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",

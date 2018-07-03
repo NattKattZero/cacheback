@@ -1,2 +1,2 @@
-# cacheback
-Javascript caching library
+# cousin
+Javascript relationship library
