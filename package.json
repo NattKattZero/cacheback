@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack --watch",
-    "test": "babel-node --presets env test/test*.js"
+    "test": "babel-node --presets env test/suite.js"
   },
   "author": "Nathan Johnson <nwjohnson@gmail.com>",
   "license": "MIT",
