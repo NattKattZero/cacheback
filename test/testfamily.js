@@ -13,6 +13,13 @@ test('Family.describe', t => {
   t.end();
 });
 
+test('Family.getKind with untracked kind', t => {
+  const family = new Family();
+  const kind = family.getKind('bob');
+  t.notOk(kind, 'kind should be null or undefined');
+  t.end();
+});
+
 test('Family.relate', t => {
   const family = new Family();
   family.describe('person', 'id');
@@ -24,5 +31,35 @@ test('Family.relate', t => {
   t.ok(phoneNumbers);
   t.equal(phoneNumbers.length, 1, 'phoneNumbers should contain one item');
   t.equal(phoneNumbers[0], '867-5309', 'phone number should be 867-5309');
+  t.end();
+});
+
+test('Family.relate with undefined kind1', t => {
+  const family = new Family();
+  family.describe('phoneNumber', 'number');
+  const person = { id: 1, name: 'superfly' };
+  const phoneNumber = { number: '867-5309' };
+  t.throws(
+    () => {
+      family.relate('person', person, 'phoneNumber', phoneNumber);
+    },
+    /No description for kind person/,
+    'relate should throw exception'
+  );
+  t.end();
+});
+
+test('Family.relate with undefined kind2', t => {
+  const family = new Family();
+  family.describe('person', 'id');
+  const person = { id: 1, name: 'superfly' };
+  const phoneNumber = { number: '867-5309' };
+  t.throws(
+    () => {
+      family.relate('person', person, 'phoneNumber', phoneNumber);
+    },
+    /No description for kind phoneNumber/,
+    'relate should throw exception'
+  );
   t.end();
 });

@@ -18,7 +18,13 @@ export class Family {
 
   relate(kind1, item1, kind2, item2) {
     const kind1Desc = this.kinds.get(kind1);
+    if (!kind1Desc) {
+      throw new Error(`No description for kind ${kind1}.`);
+    }
     const kind2Desc = this.kinds.get(kind2);
+    if (!kind2Desc) {
+      throw new Error(`No description for kind ${kind2}.`);
+    }
     if (!this.relationships.has(`${kind1}:${kind2}`)) {
       this.relationships.set(`${kind1}:${kind2}`, new Map());
     }
