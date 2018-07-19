@@ -1,2 +1,1 @@
-import './testcache';
 import './testfamily';
