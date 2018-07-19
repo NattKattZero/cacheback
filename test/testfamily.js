@@ -63,3 +63,23 @@ test('Family.relate with undefined kind2', t => {
   );
   t.end();
 });
+
+test('Family.getRelated with no relationships nor kinds', t => {
+  const family = new Family();
+  t.throws(
+    () => {
+      family.getRelated('person', {}, 'phoneNumber');
+    },
+    /No description for kind person/,
+    'getRelated should throw exception'
+  );
+  t.end();
+});
+
+test('Family.getRelated with no relationships', t => {
+  const family = new Family();
+  family.describe('person', 'id');
+  const phoneNumbers = family.getRelated('person', {}, 'phoneNumber');
+  t.equal(phoneNumbers.length, 0, 'relationships should be empty');
+  t.end();
+});

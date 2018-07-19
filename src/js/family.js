@@ -47,7 +47,13 @@ export class Family {
 
   getRelated(kind1, item1, kind2) {
     const kind1Desc = this.kinds.get(kind1);
+    if (!kind1Desc) {
+      throw new Error(`No description for kind ${kind1}.`);
+    }
     const kind1ToKind2Rel = this.relationships.get(`${kind1}:${kind2}`);
+    if (!kind1ToKind2Rel) {
+      return [];
+    }
     return kind1ToKind2Rel.get(item1[kind1Desc.pk]);
   }
 }
